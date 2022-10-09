@@ -15,7 +15,7 @@ To compute this metric, we need to divide the dataset in train, calibration and 
 - Firts of all, an uncertainty metric must be defined. Like the predicted probability of an instance belongs to each class in a classification problem.
 - Define the score function that calculates how distant a predicted value is from the true one..
 - Use a model fitted with the train subset, calculate the score values in the calibration data;
-- Calculate the quantile $\hat{q}=\frac{\left[\left(n+1\right)\left(1-\alpha\right)\right]$;
+- Calculate the quantile $ \hat{q}=\frac{\left[\left(n+1\right)\left(1-\alpha\right)\right] $;
 - Use this quantile to obtain the confidence sets in test set.
 
 ## Conformal Predictions in classification
