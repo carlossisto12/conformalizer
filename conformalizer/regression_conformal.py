@@ -59,12 +59,12 @@ class ConformalRegression:
 
         self.calib_ = pd.concat([pd.DataFrame(self.x_calib,
                                               columns=self.df.drop(columns=self.target).columns),  # NOQA: E501
-                                 pd.DataFrame(self.y_calib).reset_index(drop=True)],  # NOQA: E501
+                                 pd.DataFrame(self.y_calib)],  # NOQA: E501
                                 axis=1)
         self.test_ = pd.concat([pd.DataFrame(self.x_test,
-                                              columns=self.df.drop(columns=self.target).columns),  # NOQA: E501
-                                 pd.DataFrame(self.y_test).reset_index(drop=True)],  # NOQA: E501
-                                axis=1)
+                                             columns=self.df.drop(columns=self.target).columns),
+                                pd.DataFrame(self.y_test)],
+                               axis=1)
 
     def _compute_qhat(self, calib_pred, alpha):
         """
@@ -136,8 +136,7 @@ class ConformalRegression:
         else:
             rf = RandomForestRegressor()
             rf_test = RandomForestRegressor()
-
-        rf.fit(self.calib_.drop(columns=self.target), self.calib_[self.target])
+        rf.fit(self.calib_.drop(columns=self.target).values, self.calib_[self.target])
         calib_pred = pd.DataFrame()
         for pred in tqdm(rf.estimators_):
             temp = pd.Series(
@@ -152,7 +151,7 @@ class ConformalRegression:
 
         qhat = self._compute_qhat(calib_pred, alpha)
 
-        rf_test.fit(self.test_.drop(columns=self.target),
+        rf_test.fit(self.test_.drop(columns=self.target).values,
                     self.test_[self.target])
         pred_rf_test = pd.DataFrame()
         for pred in tqdm(rf_test.estimators_):

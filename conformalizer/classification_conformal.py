@@ -46,9 +46,9 @@ class ConformalClassification:
         self.calib = self.df.sample(n=self.n_calib,
                                     random_state=self.random_state)
         self.df = self.df[~self.df.index.isin(self.calib.index)]
-        x = self.df.drop(self.target, axis=1)
+        x = self.df.drop([self.target, self.target+'_encode'], axis=1)
         y = self.df[self.target + '_encode']
-        self.x_calib = self.calib.drop(self.target, axis=1)
+        self.x_calib = self.calib.drop([self.target, self.target+'_encode'], axis=1)
         self.y_calib = self.calib[self.target + '_encode']
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(x,  # NOQA: E501
                                                                                 y,  # NOQA: E501
@@ -89,18 +89,21 @@ class ConformalClassification:
         Compute non-greedy conformal predictions.
         """
         preds = []
+        sum_ = []
         for i in tqdm(range(test_pred.shape[0])):
             preds_soft = self.dict_map.copy()
             preds_soft['soft_prob'] = test_pred[i]
             preds_soft = preds_soft[preds_soft['soft_prob'] > 1-qhat]
+            sum_.append(preds_soft['soft_prob'].sum())
             preds.append(preds_soft[self.target].tolist())
-        return preds
+        return preds, sum_
 
     def _compute_adaptive_conformal(self, q, test_pred):
         """
         Compute greedy conformal predictions.
         """
         preds_adaptive = []
+        sum_ = []
         for i in tqdm(range(test_pred.shape[0])):
             preds_soft = self.dict_map.copy()
             preds_soft['soft_prob'] = test_pred[i]
@@ -111,7 +114,8 @@ class ConformalClassification:
             preds_soft['exceed_q_cumsum'] = preds_soft['exceed_q'].cumsum()
             preds_soft = preds_soft[preds_soft['exceed_q_cumsum'] <= 1]
             preds_adaptive.append(preds_soft[self.target].tolist())
-        return preds_adaptive
+            sum_.append(preds_soft['soft_prob'].sum())
+        return preds_adaptive, sum_
 
     def xgb_conformal_classification(self, alpha, parameters=None,
                                      num_boost_round=30, verbose_eval=True,
@@ -163,7 +167,8 @@ class ConformalClassification:
         conformal[self.target+'_encode'] = self.y_test
         conformal = conformal.merge(self.dict_map, on=self.target+'_encode')
         conformal.drop(columns=self.target+'_encode', inplace=True)
-        conformal['conformal_prediction'] = conformal_prediction
+        conformal['conformal_prediction'] = conformal_prediction[0]
+        conformal['set_confidence'] = conformal_prediction[1]
         return conformal
 
     def conformal_classification(self, alpha, classifier, method='standard'):
