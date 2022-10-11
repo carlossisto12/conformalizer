@@ -71,7 +71,7 @@ To use gradient boosting to compute the conformal predictions, the method  ``gra
 
 ### Notes
 
-Conformal Predictions are powerfull tools, but don't fix the problems of use a model that can't explain your data. If it's happen, you will get the prediction sets or intervals, but the results will not be trustworth.
+Conformal Predictions are powerfull tools, but don't fix the problems of use a model that can't explain your data. If it's happen, you will get the prediction sets or intervals, but these intervals will be very wide.
 
 ### References
 
